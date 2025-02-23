@@ -1,49 +1,59 @@
 package com.example.car_shop.service;
 
 import com.example.car_shop.entity.Account;
+import com.example.car_shop.entity.Vehicle;
 import com.example.car_shop.exception.AccountAlreadyExistsException;
 import com.example.car_shop.exception.AccountDoesNotExistException;
+import com.example.car_shop.model.AccountConverter;
 import com.example.car_shop.model.AccountDTO;
 import com.example.car_shop.repository.AccountRepository;
+import com.example.car_shop.repository.VehicleRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class AccountService {
+
     private AccountRepository accountRepository;
+    private VehicleRepository vehicleRepository;
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, VehicleRepository vehicleRepository) {
         this.accountRepository = accountRepository;
+        this.vehicleRepository = vehicleRepository;
     }
-
 
     // METHOD TO CREATE NEW ACCOUNT
 
-    public void addNewAccount(AccountDTO accountDTO) {
+    public AccountDTO addNewAccount(AccountDTO accountDTO) {
         Optional<Account> byNifAccount = this.accountRepository.findByNif(accountDTO.getNif());
 
         if (byNifAccount.isPresent()) {
             throw new AccountAlreadyExistsException("There's already an account with Nif " + accountDTO.getNif());
         }
 
-        Account account = new Account();
-        account.setFirstname(accountDTO.getFirstname());
-        account.setLastname(accountDTO.getLastname());
-        account.setNif(accountDTO.getNif());
-        account.setActive(false);
+        Account account = AccountConverter.fromAccountDtoToAccount(accountDTO);
         this.accountRepository.save(account);
+
+        return accountDTO;
     }
 
 
-    // METHOD TO RETRIEVE ALL ACCOUNTS
+    // METHOD TO GET ALL ACCOUNTS
 
-    public List<Account> getAllAccounts() {
+    public List<AccountDTO> getAllAccounts() {
         List<Account> accounts = new ArrayList<>();
         this.accountRepository.findAll().forEach(accounts::add);
-        return accounts;
+
+        List<AccountDTO> accountsDTO = new ArrayList<>();
+
+        for (Account account : accounts) {
+            accountsDTO.add(AccountConverter.fromAccountToAccountDto(account));
+        }
+        return accountsDTO;
     }
 
 
@@ -107,7 +117,6 @@ public class AccountService {
         this.accountRepository.save(account);
     }
 
-
     // METHOD TO DELETE ACCOUNT BY ID
 
     public void deleteAccount(Long id) {
@@ -118,12 +127,12 @@ public class AccountService {
         }
         Account account = accountOpt.get();
         this.accountRepository.delete(account);
+        this.accountRepository.save(account);
     }
-
 
     // METHOD TO ACTIVATE ACCOUNT BY ID
 
-    public void activateAccount(Long id) throws AccountDoesNotExistException {
+    public void activateAccount(Long id) {
         Optional<Account> accountOpt = this.accountRepository.findById(id);
 
         if (accountOpt.isEmpty()) {
@@ -138,5 +147,57 @@ public class AccountService {
         }
     }
 
+    // METHOD TO DEACTIVATE ACCOUNT BY ID
 
+    public void deactivateAccount(Long id) {
+        Optional<Account> accountOpt = this.accountRepository.findById(id);
+
+        if (accountOpt.isEmpty()) {
+            throw new AccountDoesNotExistException("This account does not exist in Repository.");
+        }
+
+        Account account = accountOpt.get();
+
+        if (account.isActive()) {
+            account.setActive(false);
+            this.accountRepository.save(account);
+        }
+    }
+
+    // METHOD TO GET ALL ACCOUNTS THAT ARE DEACTIVATED
+
+    public List<AccountDTO> getDeactivatedAccounts() {
+
+        Optional<List<Account>> deactivatedAccounts = accountRepository.findByActive(false);
+
+        if (deactivatedAccounts.isEmpty()) {
+            throw new AccountDoesNotExistException("There are no deactivated accounts.");
+        }
+
+        List<AccountDTO> accountsDTO = new ArrayList<>();
+
+        for (Account account : deactivatedAccounts.get()) {
+            accountsDTO.add(AccountConverter.fromAccountToAccountDto(account));
+        }
+        return accountsDTO;
+    }
+
+
+    public List<AccountDTO> getDeactivatedAccountsWithActiveVehicles() {
+
+        Optional<List<Account>> deactivatedAccounts = this.accountRepository.findByActive(false);
+
+        Optional<List<Vehicle>> vehicles = this.vehicleRepository.findByAccountIn(deactivatedAccounts);
+
+        if (vehicles.isPresent()) {
+            List<AccountDTO> deactivatedAccountsActiveVehicles = vehicles.get().stream()
+                    .filter(vehicle -> vehicle.isActive())
+                    .map(vehicle -> AccountConverter.fromAccountToAccountDto(vehicle.getAccount()))
+                    .toList();
+
+            return deactivatedAccountsActiveVehicles;
+        }
+
+        return Collections.emptyList();
+    }
 }

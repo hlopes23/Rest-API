@@ -6,11 +6,13 @@ import com.example.car_shop.exception.AccountDoesNotExistException;
 import com.example.car_shop.model.AccountDTO;
 import com.example.car_shop.model.ErrorDTO;
 import com.example.car_shop.service.AccountService;
+import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Data
 @RestController
 @RequestMapping(path = "/car-shop/v1")
 public class AccountController {
@@ -27,19 +29,18 @@ public class AccountController {
             this.accountService.addNewAccount(accountDTO);
         } catch (AccountAlreadyExistsException e) {
             ErrorDTO errorDTO = new ErrorDTO(e.getMessage());
-            return ResponseEntity.status(400).body(errorDTO);
+            return ResponseEntity.status(400).body(errorDTO.getMessage());
         }
-        return ResponseEntity.status(201).build();
+        return ResponseEntity.status(201).body("Account created successfully!");
     }
 
 
     @GetMapping(path = "/accounts")
     public ResponseEntity<?> getAccounts() {
-//TODO:
-        List<AccountDTO> accounts = null;
-        this.accountService.getAllAccounts();
 
-        return ResponseEntity.status(200).body("ok");
+        List<AccountDTO> accounts = this.accountService.getAllAccounts();
+
+        return ResponseEntity.status(200).body(accounts);
     }
 
 
@@ -70,7 +71,7 @@ public class AccountController {
             ErrorDTO errorDTO = new ErrorDTO(e.getMessage());
             return ResponseEntity.status(404).body(errorDTO);
         }
-        return ResponseEntity.status(200).build();
+        return ResponseEntity.status(200).body(accountDTO);
     }
 
 
@@ -96,5 +97,30 @@ public class AccountController {
             return ResponseEntity.status(400).body(errorDTO);
         }
         return ResponseEntity.status(200).body("Account " + id + " activated!");
+    }
+
+
+    @PatchMapping(path = "accounts/deactivate/{id}")
+    public ResponseEntity<?> deactivateAccount(@PathVariable Long id) {
+        try {
+            this.accountService.deactivateAccount(id);
+        } catch (AccountDoesNotExistException e) {
+            ErrorDTO errorDTO = new ErrorDTO(e.getMessage());
+            return ResponseEntity.status(400).body(errorDTO);
+        }
+        return ResponseEntity.status(200).body("Account " + id + " deactivated!");
+    }
+
+
+    @GetMapping(path = "/accounts/deactivated")
+    public ResponseEntity<?> getDeactivatedAccounts() {
+        return ResponseEntity.status(200).body(accountService.getDeactivatedAccounts());
+    }
+
+
+    @GetMapping(path = "/accounts/deactivated/activevehicles")
+    public ResponseEntity<?> getDeactivatedAccountsWithActiveVehicles() {
+        
+        return ResponseEntity.ok().body(this.accountService.getDeactivatedAccountsWithActiveVehicles());
     }
 }
