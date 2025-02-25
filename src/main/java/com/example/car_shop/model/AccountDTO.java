@@ -16,5 +16,4 @@ public class AccountDTO {
     public String lastname;
     public String nif;
     public boolean active;
-    
 }

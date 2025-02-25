@@ -79,4 +79,13 @@ public class VehicleController {
         }
         return ResponseEntity.status(200).body("Account " + accountId + " associated to Vehicle " + vehicleId + ".");
     }
+
+
+    @GetMapping(path = "vehicles/licence/active/accounts/deactivated")
+    public ResponseEntity<?> getLicencePlatesOfUsersWithDeactivatedAccount() {
+
+        return ResponseEntity.status(200).body(vehicleService.getLicencePlatesOfUsersWithDeactivatedAccount());
+    }
+
 }
+

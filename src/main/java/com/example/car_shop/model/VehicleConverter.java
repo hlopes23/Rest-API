@@ -10,6 +10,7 @@ public class VehicleConverter {
                 .year(vehicle.getYear())
                 .licensePlate(vehicle.getLicensePlate())
                 .active(vehicle.isActive())
+                .accountDTO(AccountConverter.fromAccountToAccountDto(vehicle.getAccount()))
                 .build();
     }
 
@@ -18,6 +19,12 @@ public class VehicleConverter {
                 .brand(vehicleDTO.getBrand())
                 .year(vehicleDTO.getYear())
                 .licensePlate(vehicleDTO.getLicensePlate())
+                .build();
+    }
+
+    public static VehiclePlateDTO fromVehicleToVehiclePlateDTO(Vehicle vehicle) {
+        return VehiclePlateDTO.builder()
+                .licensePlate(vehicle.getLicensePlate())
                 .build();
     }
 }

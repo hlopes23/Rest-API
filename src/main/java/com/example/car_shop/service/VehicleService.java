@@ -8,12 +8,14 @@ import com.example.car_shop.exception.VehicleAlreadyExistsException;
 import com.example.car_shop.exception.VehicleDoesNotExistException;
 import com.example.car_shop.model.VehicleConverter;
 import com.example.car_shop.model.VehicleDTO;
+import com.example.car_shop.model.VehiclePlateDTO;
 import com.example.car_shop.repository.AccountRepository;
 import com.example.car_shop.repository.VehicleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +31,7 @@ public class VehicleService {
     }
 
     // METHOD TO GET ALL VEHICLES
+
     public List<VehicleDTO> getAllVehicles() {
         List<Vehicle> vehicles = new ArrayList<>();
         this.vehicleRepository.findAll().forEach(vehicles::add);
@@ -43,6 +46,7 @@ public class VehicleService {
 
 
     // METHOD TO CREATE VEHICLE
+
     public void createVehicle(@RequestBody VehicleDTO vehicleDTO) {
         Optional<Vehicle> byLicensePlate = vehicleRepository.findByLicensePlate(vehicleDTO.getLicensePlate());
 
@@ -92,7 +96,7 @@ public class VehicleService {
     }
 
 
-    //METHOD TO ASSOCIATE ACCOUNT TO VEHICLE
+    // METHOD TO ASSOCIATE ACCOUNT TO VEHICLE
 
     public void setAccountToVehicle(Long vehicleId, Long accountId) {
 
@@ -116,5 +120,19 @@ public class VehicleService {
 
         vehicle.setAccount(accountOpt.get());
         vehicleRepository.save(vehicle);
+    }
+
+
+    // METHOD TO GET LICENCE PLATES OF ACTIVE VEHICLES WITH DEACTIVATED ACCOUNTS
+
+    public List<VehiclePlateDTO> getLicencePlatesOfUsersWithDeactivatedAccount() {
+
+        Optional<List<Account>> deactivatedAccounts = this.accountRepository.findByActive(false);
+        Optional<List<Vehicle>> vehicles = this.vehicleRepository.findByAccountIn(deactivatedAccounts);
+
+        return vehicles.map(vehicleList -> vehicleList.stream()
+                .filter(Vehicle::isActive)
+                .map(VehicleConverter::fromVehicleToVehiclePlateDTO)
+                .toList()).orElse(Collections.emptyList());
     }
 }

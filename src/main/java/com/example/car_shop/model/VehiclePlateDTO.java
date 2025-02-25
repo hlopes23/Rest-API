@@ -5,16 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class VehicleDTO {
+public class VehiclePlateDTO {
 
-    public String brand;
     public String licensePlate;
-    public String year;
-    public boolean active;
-    public AccountDTO accountDTO;
-
 }

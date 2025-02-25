@@ -6,6 +6,7 @@ import com.example.car_shop.exception.AccountAlreadyExistsException;
 import com.example.car_shop.exception.AccountDoesNotExistException;
 import com.example.car_shop.model.AccountConverter;
 import com.example.car_shop.model.AccountDTO;
+import com.example.car_shop.model.AccountNamesDTO;
 import com.example.car_shop.repository.AccountRepository;
 import com.example.car_shop.repository.VehicleRepository;
 import org.springframework.stereotype.Service;
@@ -35,8 +36,7 @@ public class AccountService {
             throw new AccountAlreadyExistsException("There's already an account with Nif " + accountDTO.getNif());
         }
 
-        Account account = AccountConverter.fromAccountDtoToAccount(accountDTO);
-        this.accountRepository.save(account);
+        this.accountRepository.save(AccountConverter.fromAccountDtoToAccount(accountDTO));
 
         return accountDTO;
     }
@@ -117,6 +117,7 @@ public class AccountService {
         this.accountRepository.save(account);
     }
 
+
     // METHOD TO DELETE ACCOUNT BY ID
 
     public void deleteAccount(Long id) {
@@ -129,6 +130,7 @@ public class AccountService {
         this.accountRepository.delete(account);
         this.accountRepository.save(account);
     }
+
 
     // METHOD TO ACTIVATE ACCOUNT BY ID
 
@@ -147,6 +149,7 @@ public class AccountService {
         }
     }
 
+
     // METHOD TO DEACTIVATE ACCOUNT BY ID
 
     public void deactivateAccount(Long id) {
@@ -163,6 +166,7 @@ public class AccountService {
             this.accountRepository.save(account);
         }
     }
+
 
     // METHOD TO GET ALL ACCOUNTS THAT ARE DEACTIVATED
 
@@ -183,6 +187,8 @@ public class AccountService {
     }
 
 
+    // METHOD TO GET ALL DEACTIVATED ACOUNTS WITH ACTIVE VEHICLES
+
     public List<AccountDTO> getDeactivatedAccountsWithActiveVehicles() {
 
         Optional<List<Account>> deactivatedAccounts = this.accountRepository.findByActive(false);
@@ -191,7 +197,7 @@ public class AccountService {
 
         if (vehicles.isPresent()) {
             List<AccountDTO> deactivatedAccountsActiveVehicles = vehicles.get().stream()
-                    .filter(vehicle -> vehicle.isActive())
+                    .filter(Vehicle::isActive)
                     .map(vehicle -> AccountConverter.fromAccountToAccountDto(vehicle.getAccount()))
                     .toList();
 
@@ -199,5 +205,21 @@ public class AccountService {
         }
 
         return Collections.emptyList();
+    }
+
+
+    // METHOD TO GET FIRST AND LAST NAME OF DEACTIVATED ACCOUNTS
+
+    public List<AccountNamesDTO> getFirstAndLastNameDeactivatedAccounts() {
+
+        Optional<List<Account>> deactivatedAccounts = accountRepository.findByActive(false);
+
+        if (deactivatedAccounts.isEmpty()) {
+            throw new AccountDoesNotExistException("There are no deactivated accounts.");
+        }
+
+        return deactivatedAccounts.get().stream()
+                .map(AccountConverter::fromAccountToAccountNamesDto)
+                .toList();
     }
 }

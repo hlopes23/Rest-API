@@ -118,9 +118,14 @@ public class AccountController {
     }
 
 
-    @GetMapping(path = "/accounts/deactivated/activevehicles")
+    @GetMapping(path = "/accounts/deactivated/vehicles/active")
     public ResponseEntity<?> getDeactivatedAccountsWithActiveVehicles() {
-        
+
         return ResponseEntity.ok().body(this.accountService.getDeactivatedAccountsWithActiveVehicles());
+    }
+
+    @GetMapping(path = "/accounts/deactivated/names")
+    public ResponseEntity<?> getFirstAndLastNameDeactivatedAccounts() {
+        return ResponseEntity.status(200).body(accountService.getFirstAndLastNameDeactivatedAccounts());
     }
 }
