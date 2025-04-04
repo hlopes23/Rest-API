@@ -4,6 +4,7 @@ import com.example.car_shop.entity.Account;
 import com.example.car_shop.entity.Vehicle;
 import com.example.car_shop.exception.AccountAlreadyExistsException;
 import com.example.car_shop.exception.AccountDoesNotExistException;
+import com.example.car_shop.exception.VehicleAssociatedToAccount;
 import com.example.car_shop.model.AccountConverter;
 import com.example.car_shop.model.AccountDTO;
 import com.example.car_shop.model.AccountNamesDTO;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 
 @Service
 public class AccountService {
@@ -28,7 +30,6 @@ public class AccountService {
     }
 
     // METHOD TO CREATE NEW ACCOUNT
-
     public AccountDTO addNewAccount(AccountDTO accountDTO) {
         Optional<Account> byNifAccount = this.accountRepository.findByNif(accountDTO.getNif());
 
@@ -37,13 +38,11 @@ public class AccountService {
         }
 
         this.accountRepository.save(AccountConverter.fromAccountDtoToAccount(accountDTO));
-
         return accountDTO;
     }
 
 
     // METHOD TO GET ALL ACCOUNTS
-
     public List<AccountDTO> getAllAccounts() {
         List<Account> accounts = new ArrayList<>();
         this.accountRepository.findAll().forEach(accounts::add);
@@ -58,15 +57,13 @@ public class AccountService {
 
 
     // METHOD TO RETRIEVE ACCOUNT BY ID
-
     public Account getAccount(Long id) {
-        return this.accountRepository.findById(id).orElseThrow(() -> new IllegalStateException("ID doesn't exist."));
+        return this.accountRepository.findById(id).orElseThrow(() -> new AccountDoesNotExistException("ID doesn't exist."));
     }
 
 
-    // METHOD TO UPDATE FIRST NAME AND LAST NAME
-
-    public void updateFirstAndLastName(AccountDTO accountDTO, Long id) {
+    // METHOD TO UPDATE FIRST AND LAST NAME
+    public void updateFirstAndLastName(AccountNamesDTO accountNamesDTO, Long id) {
         Optional<Account> accountOpt = this.accountRepository.findById(id);
 
         if (accountOpt.isEmpty()) {
@@ -74,20 +71,14 @@ public class AccountService {
         }
 
         Account account = accountOpt.get();
-        if (accountDTO.getFirstname() != null && !accountDTO.getFirstname().equals("")) {
-            account.setFirstname(accountDTO.getFirstname());
-        }
-
-        if (accountDTO.getLastname() != null && !accountDTO.getLastname().equals("")) {
-            account.setLastname(accountDTO.getLastname());
-        }
+        account.setFirstname(accountNamesDTO.getFirstname());
+        account.setLastname(accountNamesDTO.getLastname());
 
         this.accountRepository.save(account);
     }
 
 
     // METHOD TO UPDATE FULL ACCOUNT DETAILS
-
     public void updateAccount(AccountDTO accountDTO, Long id) {
         Optional<Account> accountOpt = this.accountRepository.findById(id);
 
@@ -95,45 +86,31 @@ public class AccountService {
             throw new AccountDoesNotExistException("This account does not exist in Repository.");
         }
 
-        Account account = accountOpt.get();
-        if (accountDTO.getFirstname() != null && !accountDTO.getFirstname().equals("")) {
-            account.setFirstname(accountDTO.getFirstname());
-        }
-
-        if (accountDTO.getLastname() != null && !accountDTO.getLastname().equals("")) {
-            account.setLastname(accountDTO.getLastname());
-        }
-
-        if (accountDTO.getNif() != null && !accountDTO.getNif().equals("")) {
-            account.setNif(accountDTO.getNif());
-        }
-
-        if (!account.isActive()) {
-            account.setActive(true);
-        } else {
-            account.setActive(false);
-        }
-
+        Account account = AccountConverter.fromAccountDtoToAccount(accountDTO);
         this.accountRepository.save(account);
     }
 
 
     // METHOD TO DELETE ACCOUNT BY ID
-
     public void deleteAccount(Long id) {
         Optional<Account> accountOpt = this.accountRepository.findById(id);
 
         if (accountOpt.isEmpty()) {
             throw new AccountDoesNotExistException("This account does not exist in Repository.");
         }
+
         Account account = accountOpt.get();
-        this.accountRepository.delete(account);
-        this.accountRepository.save(account);
+
+        if (!account.getVehicle().isEmpty()) {
+            throw new VehicleAssociatedToAccount("There is a vehicle associated to this Account. Account cannot be deleted.");
+
+        } else {
+            this.accountRepository.delete(account);
+        }
     }
 
 
     // METHOD TO ACTIVATE ACCOUNT BY ID
-
     public void activateAccount(Long id) {
         Optional<Account> accountOpt = this.accountRepository.findById(id);
 
@@ -142,7 +119,6 @@ public class AccountService {
         }
 
         Account account = accountOpt.get();
-
         if (!account.isActive()) {
             account.setActive(true);
             this.accountRepository.save(account);
@@ -151,7 +127,6 @@ public class AccountService {
 
 
     // METHOD TO DEACTIVATE ACCOUNT BY ID
-
     public void deactivateAccount(Long id) {
         Optional<Account> accountOpt = this.accountRepository.findById(id);
 
@@ -169,7 +144,6 @@ public class AccountService {
 
 
     // METHOD TO GET ALL ACCOUNTS THAT ARE DEACTIVATED
-
     public List<AccountDTO> getDeactivatedAccounts() {
 
         Optional<List<Account>> deactivatedAccounts = accountRepository.findByActive(false);
@@ -187,8 +161,7 @@ public class AccountService {
     }
 
 
-    // METHOD TO GET ALL DEACTIVATED ACOUNTS WITH ACTIVE VEHICLES
-
+    // METHOD TO GET ALL DEACTIVATED ACCOUNTS WITH ACTIVE VEHICLES
     public List<AccountDTO> getDeactivatedAccountsWithActiveVehicles() {
 
         Optional<List<Account>> deactivatedAccounts = this.accountRepository.findByActive(false);
@@ -209,7 +182,6 @@ public class AccountService {
 
 
     // METHOD TO GET FIRST AND LAST NAME OF DEACTIVATED ACCOUNTS
-
     public List<AccountNamesDTO> getFirstAndLastNameDeactivatedAccounts() {
 
         Optional<List<Account>> deactivatedAccounts = accountRepository.findByActive(false);

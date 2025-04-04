@@ -1,12 +1,13 @@
 package com.example.car_shop.controller;
 
 import com.example.car_shop.exception.AccountDoesNotExistException;
-import com.example.car_shop.exception.VehicleAlreadyAssociatedToAccount;
 import com.example.car_shop.exception.VehicleAlreadyExistsException;
+import com.example.car_shop.exception.VehicleAssociatedToAccount;
 import com.example.car_shop.exception.VehicleDoesNotExistException;
 import com.example.car_shop.model.ErrorDTO;
 import com.example.car_shop.model.VehicleDTO;
 import com.example.car_shop.service.VehicleService;
+import jakarta.validation.Valid;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class VehicleController {
     }
 
     @PostMapping(path = "/vehicles")
-    public ResponseEntity<?> createVehicle(@RequestBody VehicleDTO vehicleDto) {
+    public ResponseEntity<?> createVehicle(@Valid @RequestBody VehicleDTO vehicleDto) {
         try {
             this.vehicleService.createVehicle(vehicleDto);
         } catch (VehicleAlreadyExistsException e) {
@@ -73,7 +74,7 @@ public class VehicleController {
 
         try {
             this.vehicleService.setAccountToVehicle(vehicleId, accountId);
-        } catch (VehicleDoesNotExistException | AccountDoesNotExistException | VehicleAlreadyAssociatedToAccount e) {
+        } catch (VehicleDoesNotExistException | AccountDoesNotExistException | VehicleAssociatedToAccount e) {
             ErrorDTO errorDTO = new ErrorDTO(e.getMessage());
             return ResponseEntity.status(400).body(errorDTO.getMessage());
         }

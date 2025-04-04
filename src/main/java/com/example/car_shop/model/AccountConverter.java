@@ -22,6 +22,14 @@ public class AccountConverter {
                 .build();
     }
 
+
+    public static Account fromAccountNamesDtoToAccount(AccountNamesDTO accountNamesDTO) {
+        return Account.builder()
+                .firstname(accountNamesDTO.getFirstname())
+                .lastname(accountNamesDTO.getLastname())
+                .build();
+    }
+
     public static AccountNamesDTO fromAccountToAccountNamesDto(Account account) {
         return AccountNamesDTO.builder()
                 .firstname(account.getFirstname())

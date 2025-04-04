@@ -3,8 +3,8 @@ package com.example.car_shop.service;
 import com.example.car_shop.entity.Account;
 import com.example.car_shop.entity.Vehicle;
 import com.example.car_shop.exception.AccountDoesNotExistException;
-import com.example.car_shop.exception.VehicleAlreadyAssociatedToAccount;
 import com.example.car_shop.exception.VehicleAlreadyExistsException;
+import com.example.car_shop.exception.VehicleAssociatedToAccount;
 import com.example.car_shop.exception.VehicleDoesNotExistException;
 import com.example.car_shop.model.VehicleConverter;
 import com.example.car_shop.model.VehicleDTO;
@@ -30,8 +30,8 @@ public class VehicleService {
         this.accountRepository = accountRepository;
     }
 
-    // METHOD TO GET ALL VEHICLES
 
+    // METHOD TO GET ALL VEHICLES
     public List<VehicleDTO> getAllVehicles() {
         List<Vehicle> vehicles = new ArrayList<>();
         this.vehicleRepository.findAll().forEach(vehicles::add);
@@ -46,7 +46,6 @@ public class VehicleService {
 
 
     // METHOD TO CREATE VEHICLE
-
     public void createVehicle(@RequestBody VehicleDTO vehicleDTO) {
         Optional<Vehicle> byLicensePlate = vehicleRepository.findByLicensePlate(vehicleDTO.getLicensePlate());
 
@@ -60,7 +59,6 @@ public class VehicleService {
 
 
     // METHOD TO DEACTIVATE VEHICLE
-
     public void deactivateVehicle(Long id) {
 
         Optional<Vehicle> vehicleOpt = this.vehicleRepository.findById(id);
@@ -79,7 +77,6 @@ public class VehicleService {
 
 
     // METHOD TO ACTIVATE VEHICLE
-
     public void activateVehicle(Long id) {
         Optional<Vehicle> vehicleOpt = this.vehicleRepository.findById(id);
 
@@ -97,7 +94,6 @@ public class VehicleService {
 
 
     // METHOD TO ASSOCIATE ACCOUNT TO VEHICLE
-
     public void setAccountToVehicle(Long vehicleId, Long accountId) {
 
         Optional<Vehicle> vehicleOpt = this.vehicleRepository.findById(vehicleId);
@@ -115,7 +111,7 @@ public class VehicleService {
         Vehicle vehicle = vehicleOpt.get();
 
         if (vehicle.getAccount() != null) {
-            throw new VehicleAlreadyAssociatedToAccount("This Vehicle already has Account " + vehicle.getAccount().getId() + " associated.");
+            throw new VehicleAssociatedToAccount("This Vehicle already has Account " + vehicle.getAccount().getId() + " associated.");
         }
 
         vehicle.setAccount(accountOpt.get());
@@ -124,7 +120,6 @@ public class VehicleService {
 
 
     // METHOD TO GET LICENCE PLATES OF ACTIVE VEHICLES WITH DEACTIVATED ACCOUNTS
-
     public List<VehiclePlateDTO> getLicencePlatesOfUsersWithDeactivatedAccount() {
 
         Optional<List<Account>> deactivatedAccounts = this.accountRepository.findByActive(false);
