@@ -35,6 +35,10 @@ A Spring Boot application for managing vehicles and accounts in a car shop conte
 - PUT /vehicles/{id}/activate — Activate a vehicle
 - PUT /vehicles/{id}/deactivate — Deactivate a vehicle
 
+## License
+
+This project is for educational purposes.
+
 ### Build & Run
 
 ```bash
