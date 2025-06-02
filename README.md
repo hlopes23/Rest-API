@@ -1,16 +1,43 @@
-CAR SHOP
-========
+# Car Shop Application
 
-Implementation of a REST API with connection to a Car Shop Database (Exercise)
+A Spring Boot application for managing vehicles and accounts in a car shop context.
 
-Springboot 3 - Java 23
+## Features
 
+- Manage accounts and vehicles
+- Associate vehicles with accounts
+- Activate/deactivate vehicles and accounts
+- Retrieve vehicles by various criteria
 
+## Technologies
 
-Contributing
-------------
+- Java
+- Spring Boot
+- Maven
+- JUnit 5 & Mockito (for testing)
 
-* Run the build locally *
+## Getting Started
 
-  mvn clean install
+### Prerequisites
+
+- Java 17+
+- Maven 3.6+
+
+## Project Structure
+
+- src/main/java/com/example/car_shop/ — Main application code
+- src/test/java/com/example/car_shop/ — Unit and integration tests
+
+### Example Endpoints
+
+- GET /vehicles — List all vehicles
+- POST /vehicles — Create a new vehicle
+- PUT /vehicles/{id}/activate — Activate a vehicle
+- PUT /vehicles/{id}/deactivate — Deactivate a vehicle
+
+### Build & Run
+
+```bash
+mvn clean install
+mvn spring-boot:runmvn test
 
